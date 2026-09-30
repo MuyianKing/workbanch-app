@@ -436,11 +436,9 @@ const hasRecords = computed(() => store.records.length > 0)
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
-  padding: calc(var(--safe-top) + var(--sp-4)) max(var(--sp-4), var(--safe-side)) var(--sp-3);
+  padding: calc(var(--safe-top) + 18px) max(18px, var(--safe-side)) 14px;
   border-bottom: 1px solid var(--glass-edge);
   background: var(--glass-strong);
-  backdrop-filter: blur(var(--blur)) saturate(180%);
-  -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
 }
 
 .topbar__row {
@@ -554,8 +552,8 @@ const hasRecords = computed(() => store.records.length > 0)
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: var(--sp-5);
-  padding: var(--sp-5) max(var(--sp-4), var(--safe-side)) calc(var(--sp-6) + 76px + var(--safe-bottom));
+  gap: 18px;
+  padding: 20px max(18px, var(--safe-side)) calc(88px + var(--safe-bottom));
 }
 
 /* ---------- 底部导航 ---------- */
@@ -568,12 +566,10 @@ const hasRecords = computed(() => store.records.length > 0)
   z-index: 25;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  min-height: 64px;
-  padding: var(--sp-2) max(var(--sp-3), var(--safe-side)) calc(var(--sp-2) + var(--safe-bottom));
+  min-height: 68px;
+  padding: 6px max(12px, var(--safe-side)) calc(6px + var(--safe-bottom));
   border-top: 1px solid var(--glass-edge);
   background: var(--glass-strong);
-  backdrop-filter: blur(var(--blur)) saturate(180%);
-  -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
 }
 
 .tabbar__item {
@@ -854,12 +850,9 @@ const hasRecords = computed(() => store.records.length > 0)
 .me-hero {
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
-  padding: var(--sp-5);
-  border: 1px solid var(--glass-edge);
-  border-radius: var(--r-lg);
-  background: var(--glass);
-  box-shadow: var(--shadow-sm);
+  gap: 14px;
+  padding: 16px 0 20px;
+  border-bottom: 1px solid var(--glass-edge);
 }
 
 .me-hero__avatar {
@@ -894,20 +887,17 @@ const hasRecords = computed(() => store.records.length > 0)
 .me-list {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  background: var(--line);
+  gap: 10px;
 }
 
 .me-item {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
-  min-height: 68px;
-  padding: var(--sp-3) var(--sp-4);
-  border: 0;
+  gap: 14px;
+  min-height: 64px;
+  padding: 12px 14px;
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--r-md);
   background: var(--glass);
   color: var(--ink);
   font-family: inherit;

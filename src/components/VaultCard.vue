@@ -97,13 +97,11 @@ const hasNotes = computed(() => Boolean(props.record.notes.trim()))
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  padding: var(--sp-4);
   border: 1px solid var(--glass-edge);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-md);
   background: var(--glass);
   box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(var(--blur)) saturate(180%);
-  -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
   transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
 }
 
