@@ -1,0 +1,484 @@
+/**
+ * 全局样式与设计令牌。
+ *
+ * **颜色一个都不写死在组件里**：组件只用这套变量，换主题就是换 `<html data-theme>` 那一层。
+ * 这样「深色」不是一堆 if，而是一次变量替换。
+ *
+ * 视觉口径（毛玻璃拟物）：
+ *  - 背景是**两层**：一层固定的渐变光斑（.app__aura），一层半透明的玻璃面板浮在上面；
+ *  - 玻璃 = 半透明底 + `backdrop-filter: blur()` + 一道亮边（`--glass-edge`）。
+ *    亮边是「玻璃有厚度」的全部来源，没有它半透明底看着只是一块没上色的方块；
+ *  - 圆角与留白都比桌面端大一号：手指比鼠标粗，元素挨太近会点错。
+ */
+
+:root {
+  /* 底色 */
+  --bg: #eef1f8;
+  --bg-aura-1: rgba(99, 102, 241, 0.28);
+  --bg-aura-2: rgba(236, 72, 153, 0.18);
+  --bg-aura-3: rgba(56, 189, 248, 0.22);
+
+  /* 玻璃面 */
+  --glass: rgba(255, 255, 255, 0.66);
+  --glass-strong: rgba(255, 255, 255, 0.82);
+  --glass-soft: rgba(255, 255, 255, 0.42);
+  --glass-edge: rgba(255, 255, 255, 0.75);
+  --blur: 22px;
+
+  /* 字 */
+  --ink: #16181f;
+  --ink-2: #4a4f5e;
+  --ink-3: #8a90a3;
+  --ink-invert: #ffffff;
+
+  /* 线与阴影 */
+  --line: rgba(20, 24, 40, 0.08);
+  --line-strong: rgba(20, 24, 40, 0.16);
+  --shadow-sm: 0 1px 2px rgba(16, 20, 40, 0.06);
+  --shadow: 0 6px 18px -6px rgba(16, 20, 40, 0.18);
+  --shadow-lg: 0 24px 48px -18px rgba(16, 20, 40, 0.32);
+
+  /* 主色与状态色 */
+  --accent: #5566f6;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(85, 102, 246, 0.12);
+  --danger: #e0453c;
+  --danger-soft: rgba(224, 69, 60, 0.12);
+  --warn: #b26a00;
+  --warn-soft: rgba(214, 137, 16, 0.14);
+
+  /* 尺度 */
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 26px;
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 28px;
+
+  --fs-micro: 11px;
+  --fs-meta: 13px;
+  --fs-body: 15px;
+  --fs-title: 17px;
+  --fs-head: 22px;
+
+  --font: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei',
+    'Segoe UI', system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'JetBrains Mono', Menlo, Consolas, monospace;
+
+  /* 安全区由 JS 从壳里取来后写进这三个变量（见 bridge/handlers.ts） */
+  --safe-top: 0px;
+  --safe-bottom: 0px;
+  --safe-side: 0px;
+}
+
+html[data-theme='dark'] {
+  --bg: #0d0f16;
+  --bg-aura-1: rgba(99, 102, 241, 0.34);
+  --bg-aura-2: rgba(219, 39, 119, 0.22);
+  --bg-aura-3: rgba(14, 165, 233, 0.2);
+
+  --glass: rgba(30, 33, 44, 0.62);
+  --glass-strong: rgba(38, 42, 55, 0.82);
+  --glass-soft: rgba(255, 255, 255, 0.06);
+  --glass-edge: rgba(255, 255, 255, 0.12);
+
+  --ink: #f2f4f9;
+  --ink-2: #b9bfd0;
+  --ink-3: #7d8496;
+
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 8px 22px -8px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 28px 56px -20px rgba(0, 0, 0, 0.7);
+
+  --accent: #7c8bff;
+  --accent-soft: rgba(124, 139, 255, 0.18);
+  --danger: #ff6b60;
+  --danger-soft: rgba(255, 107, 96, 0.16);
+  --warn: #f0b45e;
+  --warn-soft: rgba(240, 180, 94, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+  /* 关掉长按选中/系统菜单：卡片上要长按/连点，浏览器默认的那套会插进来 */
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  /* 文字随系统字号缩放，但仍不许横向滑 */
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-size-adjust: 100%;
+}
+
+/* ---------- 背景光斑 ---------- */
+
+/**
+ * 三层固定的彩色光斑。**它就是「毛玻璃底下有东西」的答案** ——
+ * 没有它，`backdrop-filter` 模糊的是一块纯色底，玻璃看着和实心没有区别。
+ * `pointer-events: none` 保证它只是一张背景；`fixed` 保证滚动时它不动（动起来会晕）。
+ */
+.app__aura {
+  position: fixed;
+  inset: -10%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.app__aura::before,
+.app__aura::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+}
+
+.app__aura::before {
+  top: -8%;
+  left: -18%;
+  width: 68vw;
+  height: 68vw;
+  background: var(--bg-aura-1);
+}
+
+.app__aura::after {
+  right: -22%;
+  bottom: -12%;
+  width: 74vw;
+  height: 74vw;
+  background: var(--bg-aura-3);
+}
+
+/* 第三个光斑只能另起一层元素（伪元素只有两个） */
+.app__aura-extra {
+  position: absolute;
+  top: 32%;
+  right: -30%;
+  width: 60vw;
+  height: 60vw;
+  border-radius: 50%;
+  background: var(--bg-aura-2);
+  filter: blur(80px);
+}
+
+/* ---------- 通用件 ---------- */
+
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(var(--blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 通用控件 ---------- */
+
+/*
+ * 这一层是**这一版唯一的控件样式来源**：按钮、输入框、分段、开关都在这里，
+ * 组件只负责结构，不各自写颜色与圆角 —— 否则「三个按钮三种圆角」迟早出现。
+ *
+ * 两套 md 尺寸口径（`--tap`）：手指的落点最小 32px，主操作 44px。
+ * 比桌面端大一档是有意的，小了会点错，而这个 App 里点错一次就是复制错了密码。
+ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  height: 40px;
+  padding: 0 var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--glass-soft);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: var(--fs-body);
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.16s ease, border-color 0.16s ease, opacity 0.16s ease;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  border-color: transparent;
+  background: linear-gradient(165deg, color-mix(in srgb, var(--accent) 92%, #fff), var(--accent));
+  color: var(--accent-ink);
+  box-shadow: 0 8px 20px -10px var(--accent);
+}
+
+.btn--danger {
+  border-color: transparent;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.btn--ghost {
+  border-color: transparent;
+  background: transparent;
+}
+
+.btn--block {
+  display: flex;
+  width: 100%;
+}
+
+/* 图标按钮：工具带上那一排。方形、无字、落点 38px */
+.icon-btn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--glass-soft);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.16s ease, color 0.16s ease, opacity 0.16s ease;
+}
+
+.icon-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.icon-btn--plain {
+  border-color: transparent;
+  background: transparent;
+}
+
+.icon-btn--accent {
+  border-color: transparent;
+  background: linear-gradient(165deg, color-mix(in srgb, var(--accent) 92%, #fff), var(--accent));
+  color: var(--accent-ink);
+  box-shadow: 0 8px 18px -10px var(--accent);
+}
+
+/* ---------- 输入框 ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.field__label {
+  color: var(--ink-3);
+  font-size: var(--fs-meta);
+}
+
+.field__hint {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  line-height: 1.6;
+}
+
+/*
+ * 输入框自身没有边框，**边框在 wrapper 上**：这样「聚焦时整圈变色」是一次
+ * box-shadow 替换，而不是去改 input 那条永远显示不全的 border（圆角处会露角）。
+ */
+.field__box {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--glass-soft);
+  box-shadow: 0 0 0 1px var(--line) inset;
+  transition: box-shadow 0.16s ease;
+}
+
+.field__box:focus-within {
+  box-shadow: 0 0 0 1.5px var(--accent) inset;
+}
+
+.field__box.is-invalid {
+  box-shadow: 0 0 0 1.5px var(--danger) inset;
+}
+
+.field__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--fs-body);
+  outline: none;
+}
+
+.field__input::placeholder {
+  color: var(--ink-3);
+}
+
+/* 密码那一栏要等宽字体：肉眼核对一串字符时，比例字体对不齐 */
+.field__input--mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+textarea.field__input {
+  height: auto;
+  min-height: 84px;
+  padding: var(--sp-3) 0;
+  line-height: 1.6;
+  resize: none;
+}
+
+.field__error {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--fs-micro);
+}
+
+/* ---------- 分段控件 ---------- */
+
+.seg {
+  display: flex;
+  padding: 3px;
+  border-radius: var(--r-md);
+  background: var(--glass-soft);
+  box-shadow: 0 0 0 1px var(--line) inset;
+}
+
+.seg__item {
+  flex: 1 1 0;
+  height: 34px;
+  border: 0;
+  border-radius: calc(var(--r-md) - 3px);
+  background: transparent;
+  color: var(--ink-3);
+  font-family: inherit;
+  font-size: var(--fs-meta);
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.seg__item.is-active {
+  background: var(--glass-strong);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------- 开关 ---------- */
+
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 46px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--line-strong);
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.switch.is-on {
+  background: var(--accent);
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
+  transition: transform 0.18s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.switch.is-on::after {
+  transform: translateX(18px);
+}
+
+/* ---------- 标签（分组候选项） ---------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.chip {
+  height: 32px;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: var(--fs-meta);
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.chip.is-active {
+  border-color: transparent;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ---------- 滚动条 ---------- */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: var(--line-strong);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>密码备忘</title>
+    <!--
+      uni.webview.js 是 base-app 官方桥的客户端：它把 uni.postMessage 等 API 挂到 window 上。
+      放这里而不是打包进 bundle —— 它是壳的一部分，升级壳时跟着换，不该被 tree-shaking 或
+      版本锁在产物里（见 AGENTS.md 第 5 节）。
+    -->
+    <script src="./bridge/uni.webview.js"></script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
